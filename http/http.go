@@ -367,6 +367,15 @@ func NotFoundHandler(w http.ResponseWriter, r *http.Request) *appError {
 	return err
 }
 
+func (s *Server) RobotsHandler(w http.ResponseWriter, r *http.Request) *appError {
+	ua := useragent.Parse(r.UserAgent())
+	fmt.Fprintf(w, "User-Agent: %s\n", ua.Product)
+	fmt.Fprintf(w, "%s\n", "Disallow: /")
+	fmt.Fprintf(w, "%s\n", "User-Agent: *")
+	fmt.Fprintf(w, "%s\n", "Disallow: /")
+	return nil
+}
+
 func cliMatcher(r *http.Request) bool {
 	ua := useragent.Parse(r.UserAgent())
 	switch ua.Product {
@@ -386,6 +395,7 @@ func wrapHandlerFunc(f http.HandlerFunc) appHandler {
 }
 
 func (fn appHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("X-Robots-Tag", "noindex")
 	if e := fn(w, r); e != nil { // e is *appError
 		if e.Code/100 == 5 {
 			log.Println(e.Error)
@@ -420,6 +430,7 @@ func (s *Server) Handler() http.Handler {
 	// JSON
 	r.Route("GET", "/", s.JSONHandler).Header("Accept", jsonMediaType)
 	r.Route("GET", "/json", s.JSONHandler)
+	r.Route("GET", "/robots.txt", s.RobotsHandler)
 
 	// CLI
 	r.Route("GET", "/", s.CLIHandler).MatcherFunc(cliMatcher)
