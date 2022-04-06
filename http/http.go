@@ -368,11 +368,18 @@ func NotFoundHandler(w http.ResponseWriter, r *http.Request) *appError {
 }
 
 func (s *Server) RobotsHandler(w http.ResponseWriter, r *http.Request) *appError {
+	agents := []string{
+		"*", "APIs-Google", "AdsBot-Google", "AdsBot-Google-Mobile", "AdsBot-Google-Mobile-Apps", "DuplexWeb-Google",
+		"FeedFetcher-Google", "Google-Read-Aloud", "Googlebot", "Googlebot-Image", "Googlebot-News", "Googlebot-Video",
+		"Mediapartners-Google", "Storebot-Google", "googleweblight",
+	}
 	ua := useragent.Parse(r.UserAgent())
 	fmt.Fprintf(w, "User-Agent: %s\n", ua.Product)
 	fmt.Fprintf(w, "%s\n", "Disallow: /")
-	fmt.Fprintf(w, "%s\n", "User-Agent: *")
-	fmt.Fprintf(w, "%s\n", "Disallow: /")
+	for _, agent := range agents {
+		fmt.Fprintf(w, "User-Agent: %s\n", agent)
+		fmt.Fprintf(w, "%s\n", "Disallow: /")
+	}
 	return nil
 }
 
