@@ -19,6 +19,7 @@ import (
 	"net"
 	"net/http"
 	"strconv"
+	"time"
 )
 
 const (
@@ -403,6 +404,7 @@ func wrapHandlerFunc(f http.HandlerFunc) appHandler {
 
 func (fn appHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("X-Robots-Tag", "noindex")
+	w.Header().Set("X-Unixtime", strconv.FormatInt(time.Now().Unix(), 10))
 	if e := fn(w, r); e != nil { // e is *appError
 		if e.Code/100 == 5 {
 			log.Println(e.Error)
